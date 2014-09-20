@@ -5,7 +5,8 @@
   "private": true,
   "dependencies": {
     "express": "*",
-    "request": "*"
+    "request": "*",
+    "serve-favicon": "*"
   },
   "repository": {
     "type": "git",

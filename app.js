@@ -1,6 +1,7 @@
 var _ToasterOvenId = "55ff6c065075555339401487";
 var _AustinAccessToken = "76a42c019867165fc0f527a59ca90b72de7b3a21";
 var myToasterOven = new toasterOven(_ToasterOvenId, _AustinAccessToken);
+var favicon = require('serve-favicon');
 
 var express = require('express');
 
@@ -9,7 +10,7 @@ var app = express(),
   path = require('path'),
   url = require('url');
   
-app.set('port', 80);
+app.use(favicon(__dirname + '/favicon.ico'));
 
 app.get('/toasteroven/set/:temp', function(req, res, next){
   myToasterOven.setTemp(req.params.temp, function (statusCode, data) {
@@ -34,6 +35,12 @@ app.get('/toasteroven/getDoor', function(req, res, next){
     res.status(statusCode).send(data);
   });
 });
+
+app.get('/', function(req, res, next){
+  res.status(400).send("Sorry, there's nothing here, try the toaster api"); 
+})
+
+
 
 function toasterOven(deviceID, token) {
 
@@ -93,4 +100,4 @@ function sparkPost(token, deviceID, action, params) {
   )
 }
 
-app.listen(app.get('port'));
+app.listen(80);
