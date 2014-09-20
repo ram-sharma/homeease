@@ -1,6 +1,6 @@
 var _ToasterOvenId = "55ff6c065075555339401487";
 var _AustinAccessToken = "76a42c019867165fc0f527a59ca90b72de7b3a21";
-var myToasterOven = new toasterOven(_ToasterOvenId, _AustinAccessToken);
+var myToasterOven = new toasterOven(_ToasterOvenId, _AustinAccessToken, 500);
 
 var express = require('express');
 
@@ -31,43 +31,44 @@ app.get('/toasteroven/getDoor', function(req, res, next){
   return res.send(myToasterOven.doorStatus);
 });
 
-function toasterOven(deviceID, token) {
-  this.did = deviceID;
-  this.parentToken = token;
-  this.doorStatus = null;
-  this.updating = false;
+function toasterOven(deviceID, token, rate) {
+
+  _this = this;
+
+  _this.did = deviceID;
+  _this.parentToken = token;
+  _this.doorStatus = null;
+  _this.updating = false;
   
-  this.off = function() {
-    sparkPost(this.parentToken, this.did, "knob", "0");
+  _this.off = function() {
+    sparkPost(_this.parentToken, _this.did, "knob", "0");
   }
 
-  this.broil = function() {
-    sparkPost(this.parentToken, this.did, "knob", "180");
+  _this.broil = function() {
+    sparkPost(_this.parentToken, _this.did, "knob", "180");
   }
 
-  this.setTemp = function (temp) {
+  _this.setTemp = function (temp) {
     temp = parseInt(temp);
     if (temp !== undefined && temp > 199 && temp < 451) {
       angle = 50 + 80*((temp-200)/250);
-      sparkPost(this.parentToken, this.did, "knob", angle.toString());
+      sparkPost(_this.parentToken, _this.did, "knob", angle.toString());
     }
   }
 
   setInterval(function() {
-    sparkGet(token, deviceID, "door", function(error, response, body) {
-      console.log(body);
+    sparkGet(_this.parentToken, _this.did, "door", function(error, response, body) {
       body = JSON.parse(body);
       if (body !== undefined && body.result !== undefined) {
-        if (body.result == 0) this.doorStatus = "open";
-        else if (body.result == 1) this.doorStatus = "closed";
-      } else this.doorStatus = null;
+        if (body.result == 0) _this.doorStatus = "open";
+        else if (body.result == 1) _this.doorStatus = "closed";
+      } else _this.doorStatus = null;
     });
-  }, 500)
+  }, rate);
 
 }
 
 function sparkGet(token, deviceID, variable, cb) {
-  console.log("https://api.spark.io/v1/devices/" + deviceID + "/" + variable + "?access_token=" + token)
   request.get(
     "https://api.spark.io/v1/devices/" + deviceID + "/" + variable + "?access_token=" + token, cb
   )
