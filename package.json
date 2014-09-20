@@ -4,20 +4,19 @@
   "version": "0.0.1",
   "private": true,
   "dependencies": {
-    "express": "~3.2.6",
-    "node-gcm": "~0.9.6",
+    "express": "*",
     "request": "*"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mgulati/homeease.git"
+    "url": "https://github.com/ram-sharma/homeease"
   },
   "engines": {
-    "node": "0.10.12",
-    "npm": "1.2.30"
+    "node": "*",
+    "npm": "*"
   },
   "subdomain": "spot",
   "scripts": {
-    "start": "app.js"
+    "start": "node app.js"
   }
 }
