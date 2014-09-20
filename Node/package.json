@@ -1,0 +1,23 @@
+{
+  "name": "homeease",
+  "author": "hackthenorth",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "express": "~3.2.6",
+    "node-gcm": "~0.9.6",
+    "request": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mgulati/homeease.git"
+  },
+  "engines": {
+    "node": "0.10.12",
+    "npm": "1.2.30"
+  },
+  "subdomain": "spot",
+  "scripts": {
+    "start": "app.js"
+  }
+}
