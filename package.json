@@ -18,6 +18,6 @@
   },
   "subdomain": "spot",
   "scripts": {
-    "start": "node app.js"
+    "start": "sudo node app.js"
   }
 }
