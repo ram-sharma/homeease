@@ -5,6 +5,8 @@ var _AustinAccessToken = "76a42c019867165fc0f527a59ca90b72de7b3a21";
 var myToasterOven = new toasterOven(_ToasterOvenId, _AustinAccessToken);
 var myMicrowave = new microwave(_MicrowaveOvenId, _AustinAccessToken);
 
+var myTwillioNumber = "+12487668844";
+
 var favicon = require('serve-favicon');
 var express = require('express');
 
@@ -131,11 +133,11 @@ function toasterOven(deviceID, token) {
 
   _this.cook = function (recipe, cb) {
     if (_this.recipes[recipe] !== undefined)
-      _this.setCycle(_this.recipes[recipe], cb);
+      _this.setCycle(_this.recipes[recipe], recipe, cb);
     else cb(404, "Couldn't find that recipe");
   }
 
-  _this.setCycle = function (steps, cb) {
+  _this.setCycle = function (steps, name, cb) {
     var cooktime = 0;
     try {
       for (var i = 0; i < steps.length; i++) {
@@ -146,7 +148,12 @@ function toasterOven(deviceID, token) {
     } catch (e) {
       cb(500, "We couldn't parse your steps, sorry");
       return;
-    } cb(200, "Your meal will be ready in " + cooktime + " seconds");
+    } 
+    if (myTwillioNumber !== null) {
+      setTimeout(function() {sendMessage(myTwillioNumber, "Your " + name + " is now ready to eat")}, (cooktime - 2)*1000);
+      return cb(200, name + "will be ready in " + cooktime + " seconds. You'll get a reminder at " + myTwillioNumber); 
+    }
+    else return cb(200, name + "will be ready in " + cooktime + " seconds.");
   }
 
   var doSetTimeout = function(step, cooktime) {
@@ -226,16 +233,16 @@ function microwave(deviceID, token) {
     "baked potato" : [ { "time" : 120, "power" : "high" }, { "time" : 120, "heat" : "medium" }],
     "ramen" : [ { "time" : 210, "power" : "high" } ],
     "hot pocket" : [ { "time" : 105, "power" : "high" }],
-    "nukeDemo" : [{"time":5, "power":"high"}, {"time":10, "power":"low"}]
+    "zapDemo" : [{"time":5, "power":"high"}, {"time":10, "power":"low"}]
   }
 
   _this.cook = function (recipe, cb) {
     if (_this.recipes[recipe] !== undefined)
-      _this.setCycle(_this.recipes[recipe], cb);
+      _this.setCycle(_this.recipes[recipe], recipe, cb);
     else cb(404, "Couldn't find that recipe");
   }
 
-  _this.setCycle = function (steps, cb) {
+  _this.setCycle = function (steps, name, cb) {
     var cooktime = 0;
     try {
       for (var i = 0; i < steps.length; i++) {
@@ -245,7 +252,12 @@ function microwave(deviceID, token) {
     } catch (e) {
       cb(500, "We couldn't parse your steps, sorry");
       return;
-    } cb(200, "Your meal will be ready in " + cooktime + " seconds");
+    } 
+    if (myTwillioNumber !== null) {
+      setTimeout(function() {sendMessage(myTwillioNumber, "Your " + name + " is now ready to eat")}, (cooktime - 2)*1000);
+      return cb(200, name + "will be ready in " + cooktime + " seconds. You'll get a reminder at " + myTwillioNumber); 
+    }
+    else return cb(200, name + "will be ready in " + cooktime + " seconds.");
   }
 
   var doSetTimeout = function(step, cooktime) {

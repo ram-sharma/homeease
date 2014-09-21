@@ -6,7 +6,8 @@
   "dependencies": {
     "express": "*",
     "request": "*",
-    "serve-favicon": "*"
+    "serve-favicon": "*",
+    "twilio":"*"
   },
   "repository": {
     "type": "git",
