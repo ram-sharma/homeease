@@ -108,6 +108,13 @@ function microwave(deviceID, token) {
   _this = this;
   _this.did = deviceID;
   _this.parentToken = token;
+  _this.recipes = [
+    "popcorn" : [ { "time" : 150, "power" : "high" } ],
+    "hot chocolate" : [ { "time" : 120, "power" : "high" }, { "time" : 180, "power" : "low" } ],
+    "baked potato" : [ { "time" : 120, "power" : "high" }, { "time" : 120, "heat" : "medium" ],
+    "ramen" : [ { "time" : 210, "power" : "high" } ],
+    "hot pocket" : [ { "time" : 105, "power" : "high" }]
+  ]
 
   _this.pause = function(cb) {
     sparkPost(_this.parentToken, _this.did, "press", "stop", function (error, response, body) {
