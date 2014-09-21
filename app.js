@@ -48,7 +48,6 @@ function toasterOven(deviceID, token) {
 
   _this.did = deviceID;
   _this.parentToken = token;
-  _this.updating = false;
   _this.knob = null;
   
   _this.off = function(cb) {
@@ -90,14 +89,37 @@ function sparkGet(token, deviceID, variable, cb) {
   )
 }
 
-function sparkPost(token, deviceID, action, params) {
+function sparkPost(token, deviceID, action, params, callback) {
   request.post(
     "https://api.spark.io/v1/devices/" + deviceID + "/" + action + "?access_token=" + token,
     {form: {args: params}}, function (error, response, body) {
-      if (!error && response.statusCode == 200) return body;
+      if (!error && response.statusCode == 200) {
+        if (callback != null) callback();
+        return body;
+      }
       else return "error";
     }
   )
+}
+
+function microwave(deviceID, token) {
+
+  _this = this;
+  _this.did = deviceID;
+  _this.parentToken = token;
+
+  _this.stop = function(cb) {
+    sparkPost(_this.parentToken, _this.did, "knob", "0", function() {
+      sparkPost(_this.parentToken, _this.did, "knob", "0", function() {
+        cb(200, "Microwave reset")
+      })
+    });
+  }
+
+  _this.start = function(powerLevel, time, cb) {
+    //enter time, enter power level, hit start
+    sparkPost(_this.parentToken, _this.did, "knob", "180");
+  }
 }
 
 app.listen(process.env.PORT || 80);
