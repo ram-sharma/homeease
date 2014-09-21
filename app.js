@@ -269,4 +269,24 @@ function sparkPost(token, deviceID, action, params, cb) {
   )
 }
 
+function sendMessage(number, message) {
+  var twilio = require('twilio')
+  var client = new twilio.RestClient('AC75cd8b6fc138c4352d187d58c1c3270f', '19846d24bf0edd4d22979d681f1066bd')
+
+  client.sms.messages.create({
+    to:number,
+    from:'+12486394931',
+    body:'ahoy hoy! Testing Twilio and node.js'
+  }, function(error, message) {    
+    if (!error) {
+      console.log('Success! The SID for this SMS message is:')
+      console.log(message.sid)
+      console.log('Message sent on:')
+      console.log(message.dateCreated)
+    } else {
+      console.log('Oops! There was an error.')
+    }
+  })
+}
+
 app.listen(process.env.PORT || 80);
