@@ -43,8 +43,6 @@ app.get('/', function(req, res, next){
   res.status(400).send("Sorry, there's nothing here, try the toaster api"); 
 })
 
-
-
 function toasterOven(deviceID, token) {
 
   _this = this;
@@ -52,14 +50,6 @@ function toasterOven(deviceID, token) {
   _this.did = deviceID;
   _this.parentToken = token;
   _this.knob = null;
-
-  _this.recipes = [
-    "pizza" : [ { "time" : 900, "heat" : 400 } ],
-    "toast" : [ { "time" : 300, "heat" : 450 } ],
-    "chicken" : [ { "time" : 60, "heat" : 475 }, { "time" : 4800, "heat" : 400 ],
-    "bacon" : [ { "time" : 900, "heat" : 400 } ],
-    "crispy bacon" : [ { "time" : 1080, "heat" : 410 }]
-  ]
   
   _this.off = function(cb) {
     sparkPost(_this.parentToken, _this.did, "knob", "0", function(error, response, body) {
@@ -88,7 +78,7 @@ function toasterOven(deviceID, token) {
           _this.knob = temp;
           cb(200,"oven set to " + temp.toString());
         } else cb(500, "couldn't post temperature to the spark")
-      };
+      });
     } else cb(400,"Please use a valid temperature, between 200 and 450");
   }
 
@@ -101,6 +91,40 @@ function toasterOven(deviceID, token) {
       } else cb(500,"error getting data from the spark");
     });
   }
+
+  _this.recipes = {
+    "pizza": [{ "time" : 900, "heat" : 400 }],
+    "toast": [{ "time" : 300, "heat" : 450 }],
+    "chicken": [{ "time" : 60, "heat" : 450 }, { "time" : 4800, "heat" : 400 }],
+    "bacon": [{ "time" : 900, "heat" : 400 }],
+    "crispy bacon": [ { "time" : 1080, "heat" : 410 }]
+  }
+
+  _this.cook = function (recipie, cb) {
+    if (_this.recipies.recipie !== undefined)
+      _this.setCycle(_this.recipies.recipie, cb);
+    else cb(404, "Couldn't find that recipie");
+  }
+
+  _this.setCycle = function (steps, cb) {
+    var cooktime = 0;
+    try {
+      for (step in steps) {
+        setTimeout(function() {
+          _this.setTemp(steps[step].heat, function() {})
+        }, cooktime * 1000);
+        cooktime += steps[step].time;
+      }
+      setTimeout(function() {
+        _this.off(function() {})
+      }, cooktime * 1000);
+    } catch (e) {
+      cb(500, "We couldn't parse your steps, sorry");
+      return;
+    } 
+    cb(200, "Your meal will be ready in " + cooktime + " seconds");
+  }
+
 }
 
 function microwave(deviceID, token) {
@@ -108,13 +132,6 @@ function microwave(deviceID, token) {
   _this = this;
   _this.did = deviceID;
   _this.parentToken = token;
-  _this.recipes = [
-    "popcorn" : [ { "time" : 150, "power" : "high" } ],
-    "hot chocolate" : [ { "time" : 120, "power" : "high" }, { "time" : 180, "power" : "low" } ],
-    "baked potato" : [ { "time" : 120, "power" : "high" }, { "time" : 120, "heat" : "medium" ],
-    "ramen" : [ { "time" : 210, "power" : "high" } ],
-    "hot pocket" : [ { "time" : 105, "power" : "high" }]
-  ]
 
   _this.pause = function(cb) {
     sparkPost(_this.parentToken, _this.did, "press", "stop", function (error, response, body) {
@@ -151,13 +168,85 @@ function microwave(deviceID, token) {
     });
   }
 
-
   _this.stop = function(cb) {
     _this.pause(function(status, message) {
-      if (status === 500) cb(status, message);
-      else if (status === 200) _this.pause(cb);
+      if (status === 200) _this.pause(cb);
       else cb(500, "Error stopping the microwave")
-    }
+    });
+  }
+
+  _this.set = function(power, time, cb) { 
+    if (power !== "high" && power !== "med" && power !== "low")
+      return cb(400, "Power level must be high low or medium");
+    if (isNan(time)) return cb(400, "Time must be in integer seconds");
+
+    _this.nine(function (status, message) {
+      if (status === 200) _this.nine(function (status, messages) {
+        if (status === 200) _this.nine(function (status, messages) {
+          if (status === 200) _this.nine(function (status, messages) {
+            if (status === 200) { 
+              if (power == "med") {
+                _this.power(function (status, message) {
+                  if (status === 200) _this.nine(function (status, message){
+                    if (status === 200) {
+                      setTimeout(function() {
+                        _this.off(function(status, message) {})
+                      }, time * 1000);
+                      cb(200, "Your food will be ready in " + time + " seconds");
+                    } else cb(500, "Error setting the microwave: " + message);
+                  }); else cb(500, "Error setting the microwave: " + message);
+                })
+              } else if (power == "low") {
+                _this.power(function (status, message) {
+                  if (status === 200) _this.five(function (status, message){
+                    if (status === 200) {
+                      setTimeout(function() {
+                        _this.off(function(status, message) {})
+                      }, time * 1000);
+                      cb(200, "Your food will be ready in " + time + " seconds");
+                    } else cb(500, "Error setting the microwave: " + message);
+                  }); else cb(500, "Error setting the microwave: " + message);
+                })
+              } else {
+                setTimeout(function() {
+                  _this.off(function(status, message) {})
+                }, time * 1000);
+                cb(200, "Your food will be ready in " + time + " seconds");
+              }
+            } else cb(500, "Error setting the microwave: " + message);
+          }); else cb(500, "Error setting the microwave: " + message);
+        }); else cb(500, "Error setting the microwave: " + message);
+      }); else cb(500, "Error setting the microwave: " + message);    
+    })
+  }
+
+  _this.recipes = {
+    "popcorn" : [ { "time" : 150, "power" : "high" } ],
+    "hot chocolate" : [ { "time" : 120, "power" : "high" }, { "time" : 180, "power" : "low" } ],
+    "baked potato" : [ { "time" : 120, "power" : "high" }, { "time" : 120, "heat" : "medium" }],
+    "ramen" : [ { "time" : 210, "power" : "high" } ],
+    "hot pocket" : [ { "time" : 105, "power" : "high" }]
+  }
+
+  _this.cook = function (recipie, cb) {
+    if (_this.recipies.recipie !== undefined)
+      _this.setCycle(_this.recipies.recipie, cb);
+    else cb(404, "Couldn't find that recipie");
+  }
+
+  _this.setCycle = function (steps, cb) {
+    var cooktime = 0;
+    try {
+      for (step in steps) {
+        setTimeout(function() {
+          _this.set(steps[step].power, steps[step].time, function() {});
+        }, cooktime * 1000);
+        cooktime += steps[step].time + 2;
+      }
+    } catch (e) {
+      cb(500, "We couldn't parse your steps, sorry");
+      return;
+    } cb(200, "Your meal will be ready in " + cooktime + " seconds");
   }
 
 }
