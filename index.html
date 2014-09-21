@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Homeease</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="slider.css">
+
+  <style type="text/css">
+    
+    .header {
+      padding-top: 35px;
+      background: white;
+      height: 100vh;
+      color: black;
+    }
+
+    h3 {line-height: 1.3em;}
+    h1 {font-weight: bold;}
+
+    .logo {
+      height: 140px;
+      width: 140px;
+      padding: 7px;
+    }
+
+    button.microwaveBTN {
+      margin: 5px 5px 10px 5px;
+      border: 1px solid black;
+      color: black;
+      background: none;
+    }
+
+    #microwave{
+      width: 100%;
+      background: #95a5a6;
+      margin-top: 50px;
+      padding: 20px 0 30px 0;
+    }
+
+    #toaster {
+      width: 100%;
+      background: #7f8c8d;
+      padding: 20px 0 30px 0;
+    }
+
+    #slider {
+      margin: 0 200px;
+      width: 220px;
+    }
+
+    #TDoor {
+      cursor: default;
+    }
+
+    .open {
+      background: #c0392b !important; 
+    }
+
+  </style>
+
+  </head>
+  <body>
+    <div class="header text-center">
+      <img src="home.png" class="logo">
+      <h1>HOMEEASE</h1>
+      <h3>Smarter home for every one</h3>
+
+      <div id="microwave">
+        <h2>Microwave</h2>
+        <button id="M5" class="btn btn-lg microwaveBTN">5</button>
+        <button id="M9" class="btn btn-lg microwaveBTN">9</button>
+        <button id="MPower" class="btn btn-lg microwaveBTN">Power</button>
+        <button id="MStart" class="btn btn-lg microwaveBTN">Start</button>
+        <button id="MStop" class="btn btn-lg microwaveBTN">Stop</button>
+        <button id="MDemo" class="btn btn-lg microwaveBTN">Demo</button>
+      </div>
+
+      <div id="toaster">
+        <h2>Toaster Oven</h2>
+        <button id="TOff" class="btn btn-lg microwaveBTN">Off</button>
+        <input id="slider"></input>
+        <button id="TBroil" class="btn btn-lg microwaveBTN">Broil</button>
+        <button id="TDoor" class="btn btn-lg microwaveBTN" disabled>Door</button>
+      </div>
+
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="bootstrap-slider.js"></script>
+    
+    <script type="text/javascript">
+      tmpSlider = $('#slider').slider({
+        'min': 200,
+        'max': 450,
+        'value': 300
+      }).on('slideStop', function(ev) {
+        $.get("http://www.homeease.me/toasteroven/set/" + ev.value);
+      })
+
+      $('#TOff').click(function() {
+        $.get("http://www.homeease.me/toasteroven/off");
+      })
+
+      $('#TBroil').click(function() {
+        $.get("http://www.homeease.me/toasteroven/broil");
+      })
+
+      function updateDoor() {
+        $.get("http://www.homeease.me/toasteroven/getDoor", function(data) {
+          if (data === "open") $('#TDoor').addClass('open');
+          else $('#TDoor').removeClass('open');
+          setTimeout(function() {updateDoor()}, 1000);
+        });
+      }
+
+      updateDoor();
+
+      $('#M5').click(function() {
+        $.get("http://www.homeease.me/microwave/five");
+      })
+
+      $('#M9').click(function() {
+        $.get("http://www.homeease.me/microwave/nine");
+      })
+
+      $('#MPower').click(function() {
+        $.get("http://www.homeease.me/microwave/power");
+      })
+
+      $('#MStart').click(function() {
+        $.get("http://www.homeease.me/microwave/start");
+      })
+
+      $('#MStop').click(function() {
+        $.get("http://www.homeease.me/microwave/pause");
+      })
+
+      $('#MDemo').click(function() {
+        $.get("http://www.homeease.me/microwave/cook/zapDemo");
+      })
+
+    </script>
+
+ </body>
+</html>
