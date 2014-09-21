@@ -76,11 +76,11 @@ app.get('/microwave/:route', function(req, res, next){
 app.post('/witai', function (req, res, next) {
   if (req.body.intent === "cook") {
     recipe = req.body.food.value;
-    if (myToasterOven.hasOwnProperty(recipe)) {
+    if (myToasterOven.recipes.hasOwnProperty(recipe)) {
       myToasterOven.cook(recipe, function (statusCode, data) {
         return res.status(statusCode).send(data);
       });
-    } else if (myMicrowave.hasOwnProperty(recipe)) {
+    } else if (myMicrowave.recipes.hasOwnProperty(recipe)) {
       myMicrowave.cook(recipe, function (statusCode, Data) {
         return res.status(statusCode).send(Data);
       });
