@@ -5,7 +5,7 @@ var _AustinAccessToken = "76a42c019867165fc0f527a59ca90b72de7b3a21";
 var myToasterOven = new toasterOven(_ToasterOvenId, _AustinAccessToken);
 var myMicrowave = new microwave(_MicrowaveOvenId, _AustinAccessToken);
 
-var myTwillioNumber = "+12487668844";
+var myTwillioNumber = "+12269299441";
 
 var favicon = require('serve-favicon');
 var bodyParser = require('body-parser');
@@ -122,7 +122,7 @@ function toasterOven(deviceID, token) {
   _this.knob = null;
   _this.getTemp = function(cb) {
     if (_this.knob !== null) cb(200, _this.knob);
-    else cb(404, "Current temp not Known");
+    else cb(404, "Current temp not known");
   }
 
   _this.setTemp = function (temp, cb) {
@@ -195,9 +195,9 @@ function toasterOven(deviceID, token) {
     } 
     if (myTwillioNumber !== null) {
       setTimeout(function() {sendMessage(myTwillioNumber, "Your " + name + " is now ready to eat")}, (cooktime - 2)*1000);
-      return cb(200, name + "will be ready in " + cooktime + " seconds. You'll get a reminder at " + myTwillioNumber); 
+      return cb(200, name + " will be ready in " + cooktime + " seconds. You'll get a reminder at " + myTwillioNumber); 
     }
-    else return cb(200, name + "will be ready in " + cooktime + " seconds.");
+    else return cb(200, name + " will be ready in " + cooktime + " seconds.");
   }
 
   var doSetTimeout = function(step, cooktime) {
@@ -329,11 +329,11 @@ function sparkPost(token, deviceID, action, params, cb) {
 
 function sendMessage(number, message) {
   var twilio = require('twilio')
-  var client = new twilio.RestClient('AC75cd8b6fc138c4352d187d58c1c3270f', '19846d24bf0edd4d22979d681f1066bd')
+  var client = new twilio.RestClient('AC969cf7a1b886f9cea801dcc1c45319c2', 'ea0c2cf4a044b383909bc91b73531d33')
 
   client.sms.messages.create({
     to: number,
-    from:'+12486394931',
+    from:'+12267900327',
     body: message
   }, function(error, message) {    
     if (!error) console.log('Sent: ' + message.sid + " on " + message.dateCreated);
