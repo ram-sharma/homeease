@@ -52,6 +52,14 @@ function toasterOven(deviceID, token) {
   _this.did = deviceID;
   _this.parentToken = token;
   _this.knob = null;
+
+  _this.recipes = [
+    "pizza" : [ { "time" : 900, "heat" : 400 } ],
+    "toast" : [ { "time" : 300, "heat" : 450 } ],
+    "chicken" : [ { "time" : 60, "heat" : 475 }, { "time" : 4800, "heat" : 400 ],
+    "bacon" : [ { "time" : 900, "heat" : 400 } ],
+    "crispy bacon" : [ { "time" : 1080, "heat" : 410 }]
+  ]
   
   _this.off = function(cb) {
     sparkPost(_this.parentToken, _this.did, "knob", "0", function(error, response, body) {
