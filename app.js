@@ -21,8 +21,8 @@ app.get('/toasteroven/set/:temp', function(req, res, next){
   });
 });
 
-app.get('/toasteroven/cook/:recipie', function(req, res, next){
-  myToasterOven.cook(req.params.recipie,function (statusCode, data) {
+app.get('/toasteroven/cook/:recipe', function(req, res, next){
+  myToasterOven.cook(req.params.recipe,function (statusCode, data) {
     res.status(statusCode).send(data);
   });
 });
@@ -33,6 +33,31 @@ app.get('/toasterOven/:route', function(req, res, next){
     res.status(400).send("Please use an existing endpoint");
   else {
     myToasterOven[calling](function (statusCode, data){
+      res.status(statusCode).send(data);
+    })
+  }
+});
+
+app.get('/microwave/set/:time', function(req, res, next){
+  power = req.query.power || "high";
+  myMicrowave.set(power, req.params.time, function (statusCode, data) {
+    res.status(statusCode).send(data);
+  });
+});
+
+app.get('/microwave/cook/:recipe', function(req, res, next){
+  myMicrowave.cook(req.params.recipe, function (statusCode, data) {
+    res.status(statusCode).send(data);
+  });
+});
+
+app.get('/microwave/:route', function(req, res, next){
+  calling = req.params.route;
+  if (calling === undefined || (calling !== "pause" && calling !== "start" 
+    && calling !== "five" && calling !== "nine" && calling !== "power" && calling !== "stop"))
+    res.status(400).send("Please use an existing endpoint");
+  else {
+    myMicrowave[calling](function (statusCode, data){
       res.status(statusCode).send(data);
     })
   }
@@ -88,7 +113,7 @@ function toasterOven(deviceID, token) {
   _this.getDoor = function (cb) {
     sparkGet(parentToken, did, "door", function (error, response, body) {
       body = JSON.parse(body);
-      if (body !== undefined && body.result !== undefined) {
+      if (body !== undefined && body.result !== undefined) {body
         if (body.result == 0) cb(200,"open");
         else if (body.result == 1) cb(200,"closed");
       } else cb(500,"error getting data from the spark");
@@ -100,32 +125,34 @@ function toasterOven(deviceID, token) {
     "toast": [{ "time" : 300, "heat" : 450 }],
     "chicken": [{ "time" : 60, "heat" : 450 }, { "time" : 4800, "heat" : 400 }],
     "bacon": [{ "time" : 900, "heat" : 400 }],
-    "crispy bacon": [ { "time" : 1080, "heat" : 410 }]
+    "crispy bacon": [ { "time" : 1080, "heat" : 410 }],
+    "toastDemo" : [{"time":10, "heat": 450 }, {"time":15, "heat": 200}]
   }
 
-  _this.cook = function (recipie, cb) {
-    if (_this.recipies.recipie !== undefined)
-      _this.setCycle(_this.recipies.recipie, cb);
-    else cb(404, "Couldn't find that recipie");
+  _this.cook = function (recipe, cb) {
+    if (_this.recipes[recipe] !== undefined)
+      _this.setCycle(_this.recipes[recipe], cb);
+    else cb(404, "Couldn't find that recipe");
   }
 
   _this.setCycle = function (steps, cb) {
     var cooktime = 0;
     try {
-      for (step in steps) {
-        setTimeout(function() {
-          _this.setTemp(steps[step].heat, function() {})
-        }, cooktime * 1000);
-        cooktime += steps[step].time;
+      for (var i = 0; i < steps.length; i++) {
+        doSetTimeout(steps[i], cooktime);
+        cooktime += steps[i].time + 1;
       }
-      setTimeout(function() {
-        _this.off(function() {})
-      }, cooktime * 1000);
+      setTimeout(function() {_this.off(function(){})}, cooktime * 1000);
     } catch (e) {
       cb(500, "We couldn't parse your steps, sorry");
       return;
-    } 
-    cb(200, "Your meal will be ready in " + cooktime + " seconds");
+    } cb(200, "Your meal will be ready in " + cooktime + " seconds");
+  }
+
+  var doSetTimeout = function(step, cooktime) {
+    setTimeout(function() {
+      _this.setTemp(step.heat, function() {})
+    },cooktime*1000);
   }
 
 }
@@ -181,46 +208,16 @@ function microwave(deviceID, token) {
   _this.set = function(power, time, cb) { 
     if (power !== "high" && power !== "med" && power !== "low")
       return cb(400, "Power level must be high low or medium");
-    if (isNan(time)) return cb(400, "Time must be in integer seconds");
+    if (isNaN(time)) return cb(400, "Time must be in integer seconds");
 
-    _this.nine(function (status, message) {
-      if (status === 200) _this.nine(function (status, messages) {
-        if (status === 200) _this.nine(function (status, messages) {
-          if (status === 200) _this.nine(function (status, messages) {
-            if (status === 200) { 
-              if (power == "med") {
-                _this.power(function (status, message) {
-                  if (status === 200) _this.nine(function (status, message){
-                    if (status === 200) {
-                      setTimeout(function() {
-                        _this.off(function(status, message) {})
-                      }, time * 1000);
-                      cb(200, "Your food will be ready in " + time + " seconds");
-                    } else cb(500, "Error setting the microwave: " + message);
-                  }); else cb(500, "Error setting the microwave: " + message);
-                })
-              } else if (power == "low") {
-                _this.power(function (status, message) {
-                  if (status === 200) _this.five(function (status, message){
-                    if (status === 200) {
-                      setTimeout(function() {
-                        _this.off(function(status, message) {})
-                      }, time * 1000);
-                      cb(200, "Your food will be ready in " + time + " seconds");
-                    } else cb(500, "Error setting the microwave: " + message);
-                  }); else cb(500, "Error setting the microwave: " + message);
-                })
-              } else {
-                setTimeout(function() {
-                  _this.off(function(status, message) {})
-                }, time * 1000);
-                cb(200, "Your food will be ready in " + time + " seconds");
-              }
-            } else cb(500, "Error setting the microwave: " + message);
-          }); else cb(500, "Error setting the microwave: " + message);
-        }); else cb(500, "Error setting the microwave: " + message);
-      }); else cb(500, "Error setting the microwave: " + message);    
-    })
+    sparkPost(parentToken, did, "set", time.toString() + ' ,' + power, function (error, response, body) {
+      if (!error) {
+        body = JSON.parse(body);
+        if (body !== undefined && body.result !== undefined) {
+          cb(200, body.result);
+        } else cb(500, "error getting data from the spark");
+      } else cb(500, "Couldn't set up the cook: " + error);
+    });
   }
 
   _this.recipes = {
@@ -228,28 +225,33 @@ function microwave(deviceID, token) {
     "hot chocolate" : [ { "time" : 120, "power" : "high" }, { "time" : 180, "power" : "low" } ],
     "baked potato" : [ { "time" : 120, "power" : "high" }, { "time" : 120, "heat" : "medium" }],
     "ramen" : [ { "time" : 210, "power" : "high" } ],
-    "hot pocket" : [ { "time" : 105, "power" : "high" }]
+    "hot pocket" : [ { "time" : 105, "power" : "high" }],
+    "nukeDemo" : [{"time":5, "power":"high"}, {"time":10, "power":"low"}]
   }
 
-  _this.cook = function (recipie, cb) {
-    if (_this.recipies.recipie !== undefined)
-      _this.setCycle(_this.recipies.recipie, cb);
-    else cb(404, "Couldn't find that recipie");
+  _this.cook = function (recipe, cb) {
+    if (_this.recipes[recipe] !== undefined)
+      _this.setCycle(_this.recipes[recipe], cb);
+    else cb(404, "Couldn't find that recipe");
   }
 
   _this.setCycle = function (steps, cb) {
     var cooktime = 0;
     try {
-      for (step in steps) {
-        setTimeout(function() {
-          _this.set(steps[step].power, steps[step].time, function() {});
-        }, cooktime * 1000);
-        cooktime += steps[step].time + 2;
+      for (var i = 0; i < steps.length; i++) {
+        doSetTimeout(steps[i], cooktime);
+        cooktime += steps[i].time + 4;
       }
     } catch (e) {
       cb(500, "We couldn't parse your steps, sorry");
       return;
     } cb(200, "Your meal will be ready in " + cooktime + " seconds");
+  }
+
+  var doSetTimeout = function(step, cooktime) {
+    setTimeout(function() {
+      _this.set(step.power, step.time, function() {})
+    },cooktime*1000);
   }
 
 }
@@ -274,18 +276,12 @@ function sendMessage(number, message) {
   var client = new twilio.RestClient('AC75cd8b6fc138c4352d187d58c1c3270f', '19846d24bf0edd4d22979d681f1066bd')
 
   client.sms.messages.create({
-    to:number,
+    to: number,
     from:'+12486394931',
-    body:message
+    body: message
   }, function(error, message) {    
-    if (!error) {
-      console.log('Success! The SID for this SMS message is:')
-      console.log(message.sid)
-      console.log('Message sent on:')
-      console.log(message.dateCreated)
-    } else {
-      console.log('Oops! There was an error.')
-    }
+    if (!error) console.log('Sent: ' + message.sid + " on " + message.dateCreated);
+    else console.log('Error sending to ' + number);
   })
 }
 
