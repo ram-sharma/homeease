@@ -8,6 +8,7 @@ var myMicrowave = new microwave(_MicrowaveOvenId, _AustinAccessToken);
 var myTwillioNumber = "+12487668844";
 
 var favicon = require('serve-favicon');
+var bodyParser = require('body-parser');
 var express = require('express');
 
 var app = express(),
@@ -16,6 +17,7 @@ var app = express(),
   url = require('url');
   
 app.use(favicon(__dirname + '/favicon.ico'));
+app.use(bodyParser.json());
 
 app.get('/toasteroven/set/:temp', function(req, res, next){
   myToasterOven.setTemp(req.params.temp, function (statusCode, data) {
@@ -64,6 +66,48 @@ app.get('/microwave/:route', function(req, res, next){
     })
   }
 });
+
+app.post('/witai', function (req, res, next) {
+  if (req.body.intent === "cook") {
+    recipe = req.body.food.value;
+    if (myToasterOven.hasOwnProperty(recipe)) {
+      myToasterOven.cook(recipe, function (statusCode, data) {
+        return res.status(statusCode).send(data);
+      });
+    } else if (myMicrowave.hasOwnProperty(recipe)) {
+      myMicrowave.cook(recipe, function (statusCode, Data) {
+        return res.status(statusCode).send(Data);
+      });
+    } else return res.status(404).send("We don't know that recipe");
+  } else if (req.body.intent === "general_cook") {
+    if (req.body.temperature !== undefined) {
+      if (req.body.duration !== undefined) {
+        myToasterOven.setCycle([{"time":req.body.duration.value, "heat":req.body.temperature.value.temperature}],
+          (req.body.food !== undefined)? req.body.food.value : "food", function (statusCode, Data) {
+            return res.status(statusCode).send(Data);
+          }
+        );
+      } else myToasterOven.setTemp(req.body.temperature.value.temperature, function (statusCode, Data) {
+        return res.status(statusCode).send(Data);
+      })
+    } else if (req.body.duration !== undefined) {
+      powerSet = "high"
+      if (req.body.power) {
+        if (req.body.power.value === "half") powerSet = "low";
+        if (req.body.power.value === "med" || req.body.power.value === "low") powerSet = req.body.power.value;
+      }
+      myMicrowave.set(powerSet, req.body.duration.value, function (statusCode, Data) {
+        return res.status(statusCode).send(Data);
+      })
+    } else res.status(400).send("Neither of our appliances support that cook")
+  } else if (req.body.intent === "demo") {
+    if (req.body.appliance.value === "microwave") myMicrowave.cook("zapDemo", function (statusCode, Data){
+      return res.status(statusCode).send(Data);
+    }); else if (req.body.appliance.value === "oven") myToasterOven.cook("toastDemo", function (statusCode, Data){
+      return res.status(statusCode).send(Data)
+    })
+  }
+})
 
 app.get('/', function(req, res, next){
   res.status(400).send("Sorry, there's nothing here, try the toasteroven or microwave apis"); 

@@ -7,7 +7,8 @@
     "express": "*",
     "request": "*",
     "serve-favicon": "*",
-    "twilio":"*"
+    "twilio":"*",
+    "body-parser":"*"
   },
   "repository": {
     "type": "git",
