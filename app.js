@@ -178,7 +178,7 @@ function toasterOven(deviceID, token) {
     "chicken": [{ "time" : 60, "heat" : 450 }, { "time" : 4800, "heat" : 400 }],
     "bacon": [{ "time" : 900, "heat" : 400 }],
     "crispy bacon": [ { "time" : 1080, "heat" : 410 }],
-    "cookies": [{ "time": 30, "heat": 350}],
+    "cookies": [{ "time": 37, "heat": 350}],
     "toastDemo" : [{"time":10, "heat": 450 }, {"time":15, "heat": 200}]
   }
 
