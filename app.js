@@ -33,7 +33,7 @@ app.get('/toasteroven/cook/:recipe', function(req, res, next){
 
 app.get('/toasterOven/:route', function(req, res, next){
   calling = req.params.route;
-  if (calling === undefined || (calling !== "getDoor" && calling !== "off" && calling !== "broil"))
+  if (calling === undefined || (calling !== "getDoor" && calling !== "off" && calling !== "broil" && calling !== "getTemp"))
     res.status(400).send("Please use an existing endpoint");
   else {
     myToasterOven[calling](function (statusCode, data){
