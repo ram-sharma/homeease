@@ -100,4 +100,4 @@ function sparkPost(token, deviceID, action, params) {
   )
 }
 
-app.listen(80);
+app.listen(process.env.PORT || 80);
