@@ -276,7 +276,7 @@ function sendMessage(number, message) {
   client.sms.messages.create({
     to:number,
     from:'+12486394931',
-    body:'ahoy hoy! Testing Twilio and node.js'
+    body:message
   }, function(error, message) {    
     if (!error) {
       console.log('Success! The SID for this SMS message is:')
