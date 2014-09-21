@@ -1,5 +1,5 @@
 var _ToasterOvenId = "55ff6a065075555312491887";
-var _MicrowaveOvenId = "55ff6c065075555339401487"
+var _MicrowaveOvenId = "55ff6c065075555339401487";
 var _AustinAccessToken = "76a42c019867165fc0f527a59ca90b72de7b3a21";
 
 var myToasterOven = new toasterOven(_ToasterOvenId, _AustinAccessToken);
@@ -21,26 +21,26 @@ app.get('/toasteroven/set/:temp', function(req, res, next){
   });
 });
 
-app.get('/toasteroven/off', function(req, res, next){
-  myToasterOven.off(function (statusCode, data){
-    res.status(statusCode).send(data);
-  })
-});
-
-app.get('/toasteroven/broil', function(req, res, next){
-  myToasterOven.broil(function (statusCode, data) {
+app.get('/toasteroven/cook/:recipie', function(req, res, next){
+  myToasterOven.cook(req.params.recipie,function (statusCode, data) {
     res.status(statusCode).send(data);
   });
 });
 
-app.get('/toasteroven/getDoor', function(req, res, next){
-  myToasterOven.doorStatus(function (statusCode, data) {
-    res.status(statusCode).send(data);
-  });
+app.get('/toasterOven/:route', function(req, res, next){
+  calling = req.params.route;
+  if (calling === undefined || (calling !== "getDoor" && calling !== "off" && calling !== "broil"))
+    res.status(400).send("Please use an existing endpoint");
+  else {
+    myToasterOven[calling](function (statusCode, data){
+      res.status(statusCode).send(data);
+    })
+  }
 });
+
 
 app.get('/', function(req, res, next){
-  res.status(400).send("Sorry, there's nothing here, try the toaster api"); 
+  res.status(400).send("Sorry, there's nothing here, try the toasteroven or microwave apis"); 
 })
 
 function toasterOven(deviceID, token) {
@@ -82,7 +82,7 @@ function toasterOven(deviceID, token) {
     } else cb(400,"Please use a valid temperature, between 200 and 450");
   }
 
-  _this.doorStatus = function (cb) {
+  _this.getDoor = function (cb) {
     sparkGet(_this.parentToken, _this.did, "door", function (error, response, body) {
       body = JSON.parse(body);
       if (body !== undefined && body.result !== undefined) {
