@@ -18,6 +18,7 @@ var app = express(),
   
 app.use(favicon(__dirname + '/favicon.ico'));
 app.use(bodyParser.json());
+app.use(express.static(__dirname + '/public'));
 
 app.all('*', function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -116,7 +117,7 @@ app.post('/witai', function (req, res, next) {
 })
 
 app.get('/', function(req, res, next){
-  res.status(400).send("Sorry, there's nothing here, try the toasteroven or microwave apis"); 
+  res.status(200).sendFile('index.html');
 })
 
 function toasterOven(deviceID, token) {
